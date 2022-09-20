@@ -12,6 +12,9 @@ repositories {
 }
 
 dependencies {
+    implementation("net.dv8tion:JDA:5.0.0-alpha.19")
+    implementation("org.slf4j:slf4j-api:2.0.0")
+    implementation("org.slf4j:slf4j-simple:2.0.0")
     testImplementation(kotlin("test"))
 }
 
