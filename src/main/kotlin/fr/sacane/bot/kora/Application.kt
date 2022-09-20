@@ -1,5 +1,8 @@
-package fr.sacane.bot.kora.command
+package fr.sacane.bot.kora
 
+import fr.sacane.bot.kora.utils.Config
+import fr.sacane.bot.kora.utils.Mode
+import fr.sacane.bot.kora.utils.setUpCommands
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -10,30 +13,7 @@ import java.io.IOException
 import java.nio.file.Path
 
 
-fun getToken(): String?{
-    val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()
-    return try{
-        BufferedReader(FileReader(file)).use {
-            it.lines().findFirst().get()
-        }
-    }catch (e: IOException){
-        null
-    }
 
-}
-
-fun getIdTest(): String?{
-    val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()
-    return try {
-        BufferedReader(FileReader(file)).use{
-            it.lines().filter{
-                it.startsWith("idTest=")
-            }.findFirst().get().replace("idTest=", "")
-        }
-    }catch(e: IOException){
-        null
-    }
-}
 
 class Kora: ListenerAdapter(){
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
@@ -51,11 +31,11 @@ class Test:ListenerAdapter(){
 }
 
 fun main(args: Array<String>) {
-    val jda = JDABuilder.createDefault(getToken())
+    val jda = JDABuilder.createDefault(Config.getToken())
         .setActivity(Activity.listening("Samy chanter"))
         .addEventListeners(Kora(), Test())
         .build()
-    println(getIdTest())
     jda.awaitReady()
-    jda.getGuildById("1019661871923597452")?.upsertCommand("hello", "Say hello")?.queue()
+    jda.setUpCommands(Config.getId(Mode.TEST)!!)
+    jda.setUpCommands(Config.getId(Mode.PROD)!!)
 }
