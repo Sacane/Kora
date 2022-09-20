@@ -22,6 +22,19 @@ fun getToken(): String?{
 
 }
 
+fun getIdTest(): String?{
+    val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()
+    return try {
+        BufferedReader(FileReader(file)).use{
+            it.lines().filter{
+                it.startsWith("idTest=")
+            }.findFirst().get().replace("idTest=", "")
+        }
+    }catch(e: IOException){
+        null
+    }
+}
+
 class Kora: ListenerAdapter(){
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "hello") return
@@ -42,7 +55,7 @@ fun main(args: Array<String>) {
         .setActivity(Activity.listening("Samy chanter"))
         .addEventListeners(Kora(), Test())
         .build()
-
+    println(getIdTest())
     jda.awaitReady()
     jda.getGuildById("1019661871923597452")?.upsertCommand("hello", "Say hello")?.queue()
 }
