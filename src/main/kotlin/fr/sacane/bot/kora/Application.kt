@@ -1,5 +1,7 @@
 package fr.sacane.bot.kora
 
+import fr.sacane.bot.kora.command.Kora
+import fr.sacane.bot.kora.command.Test
 import fr.sacane.bot.kora.utils.Config
 import fr.sacane.bot.kora.utils.Mode
 import fr.sacane.bot.kora.utils.setUpCommands
@@ -14,21 +16,6 @@ import java.nio.file.Path
 
 
 
-
-class Kora: ListenerAdapter(){
-    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        if(event.name != "hello") return
-        println("good")
-        event.reply("Hello ${event.user.name}").queue()
-    }
-}
-
-class Test:ListenerAdapter(){
-    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        if(event.name != "test") return
-        event.reply("You're testing my command").queue()
-    }
-}
 
 fun main(args: Array<String>) {
     val jda = JDABuilder.createDefault(Config.getToken())
