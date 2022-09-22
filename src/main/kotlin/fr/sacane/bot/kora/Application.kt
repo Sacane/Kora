@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.requests.GatewayIntent
 import java.io.BufferedReader
 import java.io.FileReader
 import java.io.IOException
@@ -20,7 +21,7 @@ import java.nio.file.Path
 fun main(args: Array<String>) {
     val jda = JDABuilder.createDefault(Config.getToken())
         .setActivity(Activity.listening("Samy chanter"))
-        .addEventListeners(Kora(), Test())
+        .addEventListeners(Kora(), Test(), PollAdapter(), ButtonListener())
         .build()
     jda.awaitReady()
     jda.setUpCommands(Config.getId(Mode.TEST)!!)
