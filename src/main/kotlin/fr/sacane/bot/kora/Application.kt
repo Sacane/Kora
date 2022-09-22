@@ -7,13 +7,7 @@ import fr.sacane.bot.kora.utils.Mode
 import fr.sacane.bot.kora.utils.setUpCommands
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.GatewayIntent
-import java.io.BufferedReader
-import java.io.FileReader
-import java.io.IOException
-import java.nio.file.Path
 
 
 
@@ -21,7 +15,8 @@ import java.nio.file.Path
 fun main(args: Array<String>) {
     val jda = JDABuilder.createDefault(Config.getToken())
         .setActivity(Activity.listening("Samy chanter"))
-        .addEventListeners(Kora(), Test(), PollAdapter(), ButtonListener())
+        .addEventListeners(Kora(), Test(), PollAdapter(), ButtonListener(), Form())
+        .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
         .build()
     jda.awaitReady()
     jda.setUpCommands(Config.getId(Mode.TEST)!!)

@@ -2,44 +2,37 @@ package fr.sacane.bot.kora
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.ItemComponent
+import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.interactions.components.text.TextInput
+import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
+
+
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.awt.Color
 
 class PollAdapter : ListenerAdapter(){
 
-    companion object{
-        val logger = LoggerFactory.getLogger(Companion::class.java.name)
-    }
-
-    private lateinit var options: Array<String>
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "poll" || event.guild == null) return
-        logger.info("${event.member?.effectiveName} start a poll")
         sendPoll(event)
     }
 
-    override fun onGenericCommandInteraction(event: GenericCommandInteractionEvent) {
-        logger.info(event.subcommandName)
-    }
+
+
 
     private fun sendPoll(event: SlashCommandInteractionEvent){
         val options = mutableListOf("oui", "non")
         val uniqueId = event.member?.effectiveName
 
         val option = event.getOption("a")?.asString
-        logger.info("option morning : $option")
-
-
         event.replyEmbeds(
             EmbedBuilder()
                 .setTitle("${event.member?.effectiveName}")
@@ -67,4 +60,55 @@ class PollAdapter : ListenerAdapter(){
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
         event.replyEmbeds(successEmbed("Merci ! Ton vote à bien été pris en compte")).setEphemeral(true).queue()
     }
+
 }
+
+
+
+class Form(): ListenerAdapter(){
+
+    companion object{
+        val logger: Logger = LoggerFactory.getLogger(Companion::class.java)
+    }
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if(event.name != "form") return
+        val questionInput = TextInput.create("${event.member?.effectiveName}_question", "Question", TextInputStyle.SHORT)
+            .setMinLength(1)
+            .setRequired(true)
+            .build()
+
+        val answerInput = TextInput.create("${event.member?.effectiveName}_answer", "Answers", TextInputStyle.PARAGRAPH)
+            .setMinLength(3)
+            .setRequired(true)
+            .build()
+
+        val modal = Modal.create("${event.member?.effectiveName}_modal", "Construisez votre question !")
+            .addActionRows(listOf(ActionRow.of(questionInput), ActionRow.of(answerInput)))
+            .build()
+
+        event.replyModal(modal).queue()
+    }
+
+
+    override fun onModalInteraction(event: ModalInteractionEvent) {
+        if(event.modalId != "${event.member?.effectiveName}_modal") return
+
+        val question = event.getValue("${event.member?.effectiveName}_question")?.asString
+        val answers = event.getValue("${event.member?.effectiveName}_answer")?.asString
+            ?.split(", ")
+
+
+
+        event.reply(answers.toString()).queue()
+
+    }
+
+    private fun sendError(){
+
+    }
+
+    private fun help(){
+
+    }
+}
+

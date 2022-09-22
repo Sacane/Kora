@@ -1,11 +1,8 @@
 package fr.sacane.bot.kora.command
 
-import net.dv8tion.jda.api.events.guild.GuildReadyEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.Commands
-
 class Kora: ListenerAdapter(){
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "hello") return
@@ -17,14 +14,18 @@ class Kora: ListenerAdapter(){
 class Test: ListenerAdapter(){
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "test") return
-        event.reply("You're testing my command").queue()
-    }
-}
+        val menu = SelectMenu.create("menu:class")
+            .setPlaceholder("Choose your questions")
+            .setRequiredRange(1, 1)
+            .addOption("Question 1", "Ceci ?")
+            .addOption("Question 2", "Cela ?")
+            .addOption("Question 2", "Ou bien ça ?")
+            .build()
 
-//class CommandGuildManager: ListenerAdapter(){
-//    override fun onGuildReady(event: GuildReadyEvent) {
-//        //List of commands
-//        val commands = mutableListOf<CommandData>()
-//        commands.add(Commands.slash())
-//    }
-//}
+        event.reply("Choisissez votre réponse :")
+            .setEphemeral(true)
+            .addActionRow(menu)
+            .queue()
+    }
+
+}
