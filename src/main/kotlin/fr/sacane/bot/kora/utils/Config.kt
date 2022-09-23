@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import java.io.BufferedReader
-import java.io.File
 import java.io.FileReader
 import java.io.IOException
 import java.nio.file.Path
@@ -12,7 +11,16 @@ import java.nio.file.Path
 fun JDA.setUpCommands(guildId: String) {
     this.addCommandQueue(guildId, "hello", "Dites 'hello' au bot")
     this.addCommandQueue(guildId, "test", "Ceci est un test")
-    this.addCommandQueue(guildId, "poll", "Lancement d'un poll")
+    this.addCommandQueueWithOption(guildId,
+        "poll",
+        "Lancement d'un poll",
+        mutableListOf(
+            OptionData(OptionType.INTEGER, "seconds", "Durée en secondes du sondage"),
+            OptionData(OptionType.INTEGER, "minutes", "Durée en minutes du sondage"),
+            OptionData(OptionType.INTEGER, "hours", "Durée en heures du sondage"),
+            OptionData(OptionType.INTEGER, "days", "Durée en jours du sondage"),
+        ),
+    )
     this.addCommandQueue(guildId, "form", "Test d'un text input")
 }
 
