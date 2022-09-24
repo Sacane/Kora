@@ -142,7 +142,7 @@ class Poll(
         ).addActionRow(
             List(answers.size) { i -> Button.primary(idTemplate(this.id, i), ('A' + i).toString()) }
         ).queue {
-            it.retrieveOriginal().queue(){id -> currentId = id.id }
+            it.retrieveOriginal().queue { id -> currentId = id.id }
             CoroutineScope(Dispatchers.IO).launch{
                 delay(timeout * if(!hasUnit) 60_000 else 1)
                 sendAnswer()

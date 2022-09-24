@@ -10,22 +10,3 @@ class Kora: ListenerAdapter(){
         event.reply("Hello ${event.user.name}").queue()
     }
 }
-
-class Test: ListenerAdapter(){
-    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        if(event.name != "test") return
-        val menu = SelectMenu.create("menu:class")
-            .setPlaceholder("Choose your questions")
-            .setRequiredRange(1, 1)
-            .addOption("Question 1", "Ceci ?")
-            .addOption("Question 2", "Cela ?")
-            .addOption("Question 2", "Ou bien ça ?")
-            .build()
-
-        event.reply("Choisissez votre réponse :")
-            .setEphemeral(true)
-            .addActionRow(menu)
-            .queue()
-    }
-
-}
