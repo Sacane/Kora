@@ -22,6 +22,7 @@ fun JDA.setUpCommands(guildId: String) {
         ),
     )
     this.addCommandQueue(guildId, "form", "Test d'un text input")
+    this.addCommandQueue(guildId, "race", "Lance le jeu 'writer race' !")
 }
 
 fun JDA.addCommandQueue(guildId: String, name: String, description: String){

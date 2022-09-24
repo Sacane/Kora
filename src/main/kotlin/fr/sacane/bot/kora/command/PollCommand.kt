@@ -25,22 +25,19 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-class PollAdapter : ListenerAdapter(){
+class PollCommandListener : ListenerAdapter(){
 
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "poll" || event.guild == null) return
 
         val optionsTime = mutableMapOf<Long, DurationUnit>()
-
         optionsTime.addAllNotNull(
             Pair(event.getOption("seconds")?.asLong, DurationUnit.SECONDS),
             Pair(event.getOption("minutes")?.asLong, DurationUnit.MINUTES),
             Pair(event.getOption("hours")?.asLong, DurationUnit.HOURS),
             Pair(event.getOption("days")?.asLong, DurationUnit.DAYS)
         )
-
-        println(optionsTime)
 
         if(optionsTime.isEmpty() || optionsTime.size > 1){
             PollActionListener(event).reply()
@@ -79,15 +76,16 @@ class PollActionListener(
     private val hasUnit: Boolean = false,
     private val duration: DurationUnit = DurationUnit.MINUTES
 ): ListenerAdapter(){
+
     private val id: String = event.user.id + Instant.now()
-    private lateinit var answers: MutableList<String>
-    private lateinit var question: String
     private var answerResponses = mutableMapOf<String, Int>()
-    private lateinit var currentId: String
     private val userVote = mutableSetOf<String>()
     private val rearrangedAnswers = mutableMapOf<String, String>()
-
     private val unit = duration.name.lowercase()
+
+    private lateinit var answers: MutableList<String>
+    private lateinit var question: String
+    private lateinit var currentId: String
 
     companion object{
         val logger: Logger = LoggerFactory.getLogger(Companion::class.java)
@@ -141,7 +139,6 @@ class PollActionListener(
                 rearrangedAnswers[('A' + i).toString()] = answer
             }
         }
-        println(rearrangedAnswers)
         event.replyEmbeds(
             EmbedBuilder()
                 .setTitle("Sondage lancé par ${event.member?.effectiveName}")
