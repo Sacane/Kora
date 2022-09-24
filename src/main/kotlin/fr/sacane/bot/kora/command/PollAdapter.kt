@@ -1,14 +1,12 @@
-package fr.sacane.bot.kora
+package fr.sacane.bot.kora.command
 
 import fr.sacane.bot.kora.utils.addAllNotNull
 import kotlinx.coroutines.*
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.buttons.Button
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory
 
 
 import java.awt.Color
-import java.time.Duration
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
@@ -45,8 +42,6 @@ class PollAdapter : ListenerAdapter(){
         if(mapOfTimeDuration.isEmpty() || mapOfTimeDuration.size > 1){
             Poll(event).create()
         } else {
-            println("else !!")
-            println(mapOfTimeDuration.keys.first().timeByDuration(mapOfTimeDuration.values.first())!!)
             Poll(event, mapOfTimeDuration.keys.first().timeByDuration(mapOfTimeDuration.values.first())!!, true, mapOfTimeDuration.values.first().name.lowercase()).create()
         }
 

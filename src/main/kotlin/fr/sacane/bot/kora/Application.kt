@@ -1,6 +1,7 @@
 package fr.sacane.bot.kora
 
 import fr.sacane.bot.kora.command.Kora
+import fr.sacane.bot.kora.command.PollAdapter
 import fr.sacane.bot.kora.command.Test
 import fr.sacane.bot.kora.utils.Config
 import fr.sacane.bot.kora.utils.Mode
