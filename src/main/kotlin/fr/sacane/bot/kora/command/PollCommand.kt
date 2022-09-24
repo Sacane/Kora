@@ -27,8 +27,12 @@ import kotlin.time.DurationUnit
 
 class PollCommandListener : ListenerAdapter(){
 
-
+    private var numberPolls = 0
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if(event.name == "polls"){
+            event.reply("number of active polls : $numberPolls")
+            return
+        }
         if(event.name != "poll" || event.guild == null) return
 
         val optionsTime = mutableMapOf<Long, DurationUnit>()
@@ -41,9 +45,11 @@ class PollCommandListener : ListenerAdapter(){
 
         if(optionsTime.isEmpty() || optionsTime.size > 1){
             PollActionListener(event).reply()
+            numberPolls =+ 1
         } else {
             val duration = optionsTime.values.first()
             PollActionListener(event, optionsTime.keys.first().timeByDuration(duration)!!, true, duration).reply()
+            numberPolls += 1
         }
     }
 }
@@ -132,6 +138,7 @@ class PollActionListener(
         }
         sendPoll(event)
     }
+
     private fun sendPoll(event: ModalInteractionEvent){
         answers.forEachIndexed() { i, answer ->
             run {
@@ -171,8 +178,6 @@ class PollActionListener(
         event.member?.let { userVote.add(it.effectiveName) }
         event.reply("Votre vote à bien été pris en compte !").setEphemeral(true).queue()
         answerResponses[event.button.label] = answerResponses[event.button.label]!! + 1
-
-
     }
 
     private fun sendAnswer() {
@@ -197,7 +202,6 @@ class PollActionListener(
     private fun sendError(event: ModalInteractionEvent) {
         this.event.jda.removeEventListener(this)
         event.reply("Désolé, Un sondage ne peut contenir plus de 5 réponses :(").setEphemeral(true).queue()
-
     }
 }
 
