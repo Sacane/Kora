@@ -31,20 +31,20 @@ class PollAdapter : ListenerAdapter(){
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "poll" || event.guild == null) return
 
-        val mapOfTimeDuration = mutableMapOf<Long, DurationUnit>()
+        val optionsTime = mutableMapOf<Long, DurationUnit>()
 
-        mapOfTimeDuration.addAllNotNull(
+        optionsTime.addAllNotNull(
             Pair(event.getOption("seconds")?.asLong, DurationUnit.SECONDS),
             Pair(event.getOption("minutes")?.asLong, DurationUnit.MINUTES),
             Pair(event.getOption("hours")?.asLong, DurationUnit.HOURS),
             Pair(event.getOption("days")?.asLong, DurationUnit.DAYS)
         )
 
-        if(mapOfTimeDuration.isEmpty() || mapOfTimeDuration.size > 1){
+        if(optionsTime.isEmpty() || optionsTime.size > 1){
             PollActionListener(event).reply()
         } else {
-            val duration = mapOfTimeDuration.values.first()
-            PollActionListener(event, mapOfTimeDuration.keys.first().timeByDuration(mapOfTimeDuration.values.first())!!, true, duration).reply()
+            val duration = optionsTime.values.first()
+            PollActionListener(event, optionsTime.keys.first().timeByDuration(optionsTime.values.first())!!, true, duration).reply()
         }
 
 //        sendPoll(event)
