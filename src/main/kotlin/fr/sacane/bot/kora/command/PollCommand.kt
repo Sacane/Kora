@@ -20,6 +20,7 @@ import java.awt.Color
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
@@ -40,9 +41,10 @@ class PollAdapter : ListenerAdapter(){
         )
 
         if(mapOfTimeDuration.isEmpty() || mapOfTimeDuration.size > 1){
-            Poll(event).create()
+            PollActionListener(event).reply()
         } else {
-            Poll(event, mapOfTimeDuration.keys.first().timeByDuration(mapOfTimeDuration.values.first())!!, true, mapOfTimeDuration.values.first().name.lowercase()).create()
+            val duration = mapOfTimeDuration.values.first()
+            PollActionListener(event, mapOfTimeDuration.keys.first().timeByDuration(mapOfTimeDuration.values.first())!!, true, duration).reply()
         }
 
 //        sendPoll(event)
@@ -62,11 +64,21 @@ fun Long.timeByDuration(duration: DurationUnit): Long?{
     }
 }
 
-class Poll(
+fun Long.millisToDuration(duration: DurationUnit): Long?{
+    return when(duration){
+        DurationUnit.SECONDS -> this.milliseconds.toLong(duration)
+        DurationUnit.MINUTES -> this.milliseconds.toLong(duration)
+        DurationUnit.HOURS -> this.milliseconds.toLong(duration)
+        DurationUnit.DAYS -> this.milliseconds.toLong(duration)
+        else -> null
+    }
+}
+
+class PollActionListener(
     private val event: SlashCommandInteractionEvent,
     private val timeout: Long = 1L,
     private val hasUnit: Boolean = false,
-    private val unit: String = "minutes"
+    private val duration: DurationUnit = DurationUnit.MINUTES
 ): ListenerAdapter(){
     private val id: String = event.user.id + Instant.now()
     private lateinit var answers: MutableList<String>
@@ -76,6 +88,8 @@ class Poll(
     private val userVote = mutableSetOf<String>()
     private val rearrangedAnswers = mutableMapOf<String, String>()
 
+    private val unit = duration.name.lowercase()
+
     companion object{
         val logger: Logger = LoggerFactory.getLogger(Companion::class.java)
     }
@@ -84,7 +98,7 @@ class Poll(
         event.jda.addEventListener(this)
     }
 
-    fun create(){
+    fun reply(){
         sendModal()
     }
 
@@ -132,7 +146,7 @@ class Poll(
             EmbedBuilder()
                 .setTitle("Sondage lancé par ${event.member?.effectiveName}")
                 .setDescription("$question ?")
-                .setFooter("Resultat du sondage dans $timeout $unit !")
+                .setFooter("Resultat du sondage dans ${timeout.millisToDuration(duration)} $unit !")
                 .setColor(Color.CYAN)
                 .apply {
                     answers.forEachIndexed { i, name ->
