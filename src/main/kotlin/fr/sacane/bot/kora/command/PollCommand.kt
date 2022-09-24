@@ -40,15 +40,14 @@ class PollAdapter : ListenerAdapter(){
             Pair(event.getOption("days")?.asLong, DurationUnit.DAYS)
         )
 
+        println(optionsTime)
+
         if(optionsTime.isEmpty() || optionsTime.size > 1){
             PollActionListener(event).reply()
         } else {
             val duration = optionsTime.values.first()
-            PollActionListener(event, optionsTime.keys.first().timeByDuration(optionsTime.values.first())!!, true, duration).reply()
+            PollActionListener(event, optionsTime.keys.first().timeByDuration(duration)!!, true, duration).reply()
         }
-
-//        sendPoll(event)
-
     }
 }
 
@@ -103,17 +102,17 @@ class PollActionListener(
     }
 
     private fun sendModal(){
-        val questionInput = TextInput.create("${event.member?.effectiveName}_question", "Question", TextInputStyle.SHORT)
+        val questionInput = TextInput.create("${event.member?.effectiveName}_${id}_question", "Question", TextInputStyle.SHORT)
             .setMinLength(1)
             .setRequired(true)
             .build()
 
-        val answerInput = TextInput.create("${event.member?.effectiveName}_answer", "Answers", TextInputStyle.PARAGRAPH)
+        val answerInput = TextInput.create("${event.member?.effectiveName}_${id}_answer", "Answers", TextInputStyle.PARAGRAPH)
             .setMinLength(3)
             .setRequired(true)
             .build()
 
-        val modal = Modal.create("${event.member?.effectiveName}_modal", "Construisez votre question !")
+        val modal = Modal.create("${event.member?.effectiveName}_${id}_modal", "Construisez votre question !")
             .addActionRows(listOf(ActionRow.of(questionInput), ActionRow.of(answerInput)))
             .build()
 
@@ -121,16 +120,17 @@ class PollActionListener(
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
-        if(event.modalId != "${event.member?.effectiveName}_modal") return
+        if(event.modalId != "${event.member?.effectiveName}_${id}_modal") return
 
-        question = event.getValue("${event.member?.effectiveName}_question")?.asString.toString()
-        val answers = event.getValue("${event.member?.effectiveName}_answer")?.asString
+        question = event.getValue("${event.member?.effectiveName}_${id}_question")?.asString.toString()
+        val answers = event.getValue("${event.member?.effectiveName}_${id}_answer")?.asString
             ?.split(", ")
 
         if (answers != null && answers.size < 6) {
             this.answers = answers.toMutableList()
         } else {
             sendError(event)
+            return
         }
         sendPoll(event)
     }
@@ -154,7 +154,7 @@ class PollActionListener(
                     }
                 }.build()
         ).addActionRow(
-            List(answers.size) { i -> Button.primary(idTemplate(this.id, i), ('A' + i).toString()) }
+            List(answers.size) { i -> Button.primary("poll_button_${id}_$i", ('A' + i).toString()) }
         ).queue {
             it.retrieveOriginal().queue { id -> currentId = id.id }
             CoroutineScope(Dispatchers.IO).launch{
@@ -166,8 +166,11 @@ class PollActionListener(
     }
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
-        if( event.button.id == null || !event.button.id?.endsWith("_poll")!!) return
-        if(userVote.contains(event.member?.effectiveName)) return
+        if( event.button.id == null || !event.button.id?.startsWith("poll_button_${id}")!!) return
+        if(userVote.contains(event.member?.effectiveName)){
+            event.reply("Vous avez déjà voter !")
+            return
+        }
         event.member?.let { userVote.add(it.effectiveName) }
         event.reply("Votre vote à bien été pris en compte !").setEphemeral(true).queue()
         answerResponses[event.button.label] = answerResponses[event.button.label]!! + 1
@@ -195,7 +198,7 @@ class PollActionListener(
     }
 
     private fun sendError(event: ModalInteractionEvent) {
-        event.jda.removeEventListener(this)
+        this.event.jda.removeEventListener(this)
         event.reply("Désolé, Un sondage ne peut contenir plus de 5 réponses :(").setEphemeral(true).queue()
 
     }
