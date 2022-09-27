@@ -22,7 +22,15 @@ fun JDA.setUpCommands(guildId: String) {
         ),
     )
     this.addCommandQueue(guildId, "form", "Test d'un text input")
-    this.addCommandQueue(guildId, "race", "Lance le jeu 'writer race' !")
+    this.addCommandQueueWithOption(guildId, "race", "Lance le jeu 'writer race' !",
+        mutableListOf(
+            OptionData(OptionType.USER, "player1", "1er joueur"),
+            OptionData(OptionType.USER, "player2", "2e joueur"),
+            OptionData(OptionType.USER, "player3", "3e joueur"),
+            OptionData(OptionType.USER, "player4", "4e joueur"),
+            OptionData(OptionType.USER, "player5", "5e joueur")
+        )
+    )
 }
 
 fun JDA.addCommandQueue(guildId: String, name: String, description: String){
