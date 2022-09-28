@@ -16,7 +16,6 @@ import java.io.File
 import java.io.FileReader
 import java.time.Instant
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
@@ -33,15 +32,15 @@ class WriterRaceCommand: ListenerAdapter(){
         if(event.name != "race") return
 
         val players: Players = mutableMapOf(
-            event.user.id to Player(event.user.id, event.user.name)
+            event.user.id to RacePlayer(event.user.id, event.user.name)
         )
 
         players.addAllNotNull(
-            event.getOption("player1")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
-            event.getOption("player2")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
-            event.getOption("player3")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
-            event.getOption("player4")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
-            event.getOption("player5")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) }
+            event.getOption("player1")?.asUser.let { Pair(it?.id, RacePlayer(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player2")?.asUser.let { Pair(it?.id, RacePlayer(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player3")?.asUser.let { Pair(it?.id, RacePlayer(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player4")?.asUser.let { Pair(it?.id, RacePlayer(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player5")?.asUser.let { Pair(it?.id, RacePlayer(it?.id ?: "", it?.name ?: "")) }
         )
         val sentence = words.buildSentence()
         RaceGame(event, players, sentence).start()
@@ -72,7 +71,7 @@ fun Players.mentionAll(): String{
 
 
 
-class Player(
+class RacePlayer(
     private val id: String,
     private val name: String
 ){
@@ -86,7 +85,7 @@ class Player(
         return "<@$id>"
     }
     override fun toString(): String {
-        return "Joueur $name"
+        return name
     }
 
     fun registerTime() {
@@ -115,8 +114,7 @@ class RaceGame(
     private fun isPartOfGame(id: String): Boolean{
         return this.players.containsKey(id)
     }
-    private fun sendInviteToGame(){
-//        event.reply(players.mentionAll()).queue()
+    private fun sendInvitationToPlay(){
         event.replyEmbeds(
             EmbedBuilder()
                 .setTitle("Invitation au jeu du RaceGame")
@@ -133,33 +131,24 @@ class RaceGame(
             }
         }
     }
-
-
-
-    fun sendScores(){
-
-    }
-
-    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-
-    }
-
     private fun isPlaying(id: String): Boolean{
         return playings.contains(id)
-    }
-    private fun startPlayerGame(id: Long){
-        val player = players[event.id]
-        player?.startTimer() ?: return
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val userId = event.author.id
-        if(isPartOfGame(userId) && isPlaying(userId)){
-            if(sentence == event.message.contentRaw){
-                val player = players[userId]
-                player?.registerTime()
-                refreshResults()
-            }
+        if(isPartOfGame(userId) && isPlaying(userId) && sentence == event.message.contentRaw){
+
+            val player = players[userId]
+            player?.registerTime()
+            refreshResults()
+            return
+        }
+        if(sentence == event.message.contentRaw && isPartOfGame(userId)) {
+            event.channel.sendMessage("<@${userId} Tu as oublié d'appuyer sur le bouton start :(")
+        }
+        if(sentence == event.message.contentRaw && !isPartOfGame(userId)){
+            event.channel.sendMessage("<@${userId} Bien joué ! Mais tu ne fais pas partie des joueurs.")
         }
     }
 
@@ -173,6 +162,10 @@ class RaceGame(
                 .apply { players.forEach { addField(it.value.toString(), "${it.value.getScore()}", true)}}
                 .build()
         ).queue()
+    }
+
+    private fun endResults(){
+
     }
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
@@ -192,7 +185,7 @@ class RaceGame(
         }
     }
     fun start(){
-        sendInviteToGame()
+        sendInvitationToPlay()
     }
 
     private fun sendResults(){
@@ -204,4 +197,4 @@ class RaceGame(
 
 
 typealias Words=MutableList<String>
-typealias Players = MutableMap<String?, Player>
+typealias Players = MutableMap<String?, RacePlayer>
