@@ -1,11 +1,11 @@
 package fr.sacane.bot.kora.command
 
 import kotlinx.coroutines.CoroutineScope
+import fr.sacane.bot.kora.utils.addAllNotNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -17,6 +17,8 @@ import java.io.FileReader
 import java.time.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 class WriterRaceCommand: ListenerAdapter(){
     private var words: Words = mutableListOf()
@@ -31,12 +33,15 @@ class WriterRaceCommand: ListenerAdapter(){
         if(event.name != "race") return
 
         val players: Players = mutableMapOf(
-            Pair(event.user.id.toLong(), Player(event.user.id, event.user.name)),
-            event.getOption("player1")?.asUser.let { Pair(it?.id!!.toLong(), Player(it.id, it.name)) },
-            event.getOption("player2")?.asUser.let { Pair(it?.id!!.toLong(), Player(it.id, it.name)) },
-            event.getOption("player3")?.asUser.let { Pair(it?.id!!.toLong(), Player(it.id, it.name)) },
-            event.getOption("player4")?.asUser.let { Pair(it?.id!!.toLong(), Player(it.id, it.name)) },
-            event.getOption("player5")?.asUser.let { Pair(it?.id!!.toLong(), Player(it.id, it.name)) }
+            event.user.id to Player(event.user.id, event.user.name)
+        )
+
+        players.addAllNotNull(
+            event.getOption("player1")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player2")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player3")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player4")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) },
+            event.getOption("player5")?.asUser.let { Pair(it?.id, Player(it?.id ?: "", it?.name ?: "")) }
         )
         val sentence = words.buildSentence()
         RaceGame(event, players, sentence).start()
@@ -72,9 +77,10 @@ class Player(
     private val name: String
 ){
 
-    private var startTimer: Duration = Duration.ZERO
-    fun startTimer() : Unit{
-        this.startTimer = System.currentTimeMillis().minutes
+    private var startTimer: Long? = 0
+    private var endTimer: Long? = 0
+    fun startTimer(){
+        this.startTimer = System.currentTimeMillis()
     }
     fun asMentionedUser(): String{
         return "<@$id>"
@@ -83,8 +89,13 @@ class Player(
         return "Joueur $name"
     }
 
-    fun computeEndTime(): Duration {
-        return System.currentTimeMillis().minutes - startTimer
+    fun registerTime() {
+        endTimer = System.currentTimeMillis()
+    }
+    fun getScore(): Duration?{
+        return if(endTimer != 0L){
+            return (endTimer?.minus(startTimer!!))?.millisToDuration(DurationUnit.SECONDS)?.seconds
+        } else null
     }
 }
 
@@ -97,14 +108,12 @@ class RaceGame(
     private var gameID: String = "race_game_${Instant.now()}"
     private var playings: MutableSet<String> = mutableSetOf()
     private lateinit var mainID: String
-
     init {
         event.jda.addEventListener(this)
-
     }
 
     private fun isPartOfGame(id: String): Boolean{
-        return this.players.containsKey(id.toLong())
+        return this.players.containsKey(id)
     }
     private fun sendInviteToGame(){
 //        event.reply(players.mentionAll()).queue()
@@ -115,7 +124,7 @@ class RaceGame(
                 .addField("Phrase à réécrire", sentence, true)
                 .build()
         ).addActionRow(
-            Button.secondary("poll_button_${gameID}", "START")
+            Button.secondary("Bt_start_${gameID}", "START")
         ).queue{
             it.retrieveOriginal().queue { id -> mainID =  id.id}
             CoroutineScope(Dispatchers.IO).launch {
@@ -139,7 +148,7 @@ class RaceGame(
         return playings.contains(id)
     }
     private fun startPlayerGame(id: Long){
-        val player = players[event.id.toLong()]
+        val player = players[event.id]
         player?.startTimer() ?: return
     }
 
@@ -147,28 +156,37 @@ class RaceGame(
         val userId = event.author.id
         if(isPartOfGame(userId) && isPlaying(userId)){
             if(sentence == event.message.contentRaw){
-                updateResult(userId)
+                val player = players[userId]
+                player?.registerTime()
+                refreshResults()
             }
         }
     }
 
-    private fun updateResult(userId: String) {
+    private fun refreshResults() {
+
         event.channel.editMessageEmbedsById(
             mainID,
-            //TODO finish it
-        )
+            EmbedBuilder()
+                .setTitle("Scores")
+                .setDescription("Voici la liste des scores enregistrés")
+                .apply { players.forEach { addField(it.value.toString(), "${it.value.getScore()}", true)}}
+                .build()
+        ).queue()
     }
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
-        if(!isPartOfGame(event.id)) {
+        if(event.button.id != ("Bt_start_${gameID}")) return
+        if(!isPartOfGame(event.user.id)) {
             event.reply("Vous ne faites pas partie des joueurs !").setEphemeral(true).queue()
             return
         }
-        if(!playings.contains(event.id)){
-            playings.add(event.id)
-            val player = players[event.id.toLong()]
+        val userId = event.user.id
+        if(!playings.contains(userId)){
+            playings.add(userId)
+            val player = players[userId]
             player?.startTimer() ?: return
-
+            event.reply("Commencez à écrire !").setEphemeral(true).queue()
         } else {
             event.reply("Vous jouez déjà !")
         }
@@ -179,10 +197,11 @@ class RaceGame(
 
     private fun sendResults(){
         event.jda.removeEventListener(this)
+        refreshResults()
     }
 }
 
 
 
 typealias Words=MutableList<String>
-typealias Players = Map<Long, Player>
+typealias Players = MutableMap<String?, Player>
