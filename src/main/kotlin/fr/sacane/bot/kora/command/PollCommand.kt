@@ -1,6 +1,5 @@
 package fr.sacane.bot.kora.command
 
-import fr.sacane.bot.kora.utils.addAllNotNull
 import kotlinx.coroutines.*
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -37,10 +36,10 @@ class PollCommandListener : ListenerAdapter(){
 
         val optionsTime = mutableMapOf<Long, DurationUnit>()
         optionsTime.addAllNotNull(
-            Pair(event.getOption("seconds")?.asLong, DurationUnit.SECONDS),
-            Pair(event.getOption("minutes")?.asLong, DurationUnit.MINUTES),
-            Pair(event.getOption("hours")?.asLong, DurationUnit.HOURS),
-            Pair(event.getOption("days")?.asLong, DurationUnit.DAYS)
+            event.getOption("seconds")?.asLong to DurationUnit.SECONDS,
+            event.getOption("minutes")?.asLong to DurationUnit.MINUTES,
+            event.getOption("hours")?.asLong to DurationUnit.HOURS,
+            event.getOption("days")?.asLong to DurationUnit.DAYS
         )
 
         if(optionsTime.isEmpty() || optionsTime.size > 1){
