@@ -4,6 +4,12 @@ plugins {
     kotlin("jvm") version "1.7.10"
 }
 
+val jar by tasks.getting(Jar::class) {
+    manifest {
+        attributes["Main-Class"] = "fr.sacane.bot.kora.ApplicationKt"
+    }
+}
+
 group = "fr.sacane.bot.kora"
 version = "1.0-SNAPSHOT"
 
