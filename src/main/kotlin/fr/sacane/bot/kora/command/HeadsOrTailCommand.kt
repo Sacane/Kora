@@ -3,7 +3,6 @@ package fr.sacane.bot.kora.command
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.FileUpload
-import java.io.File
 import java.nio.file.Path
 import kotlin.random.Random
 
