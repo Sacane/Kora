@@ -9,8 +9,6 @@ import java.io.IOException
 import java.nio.file.Path
 
 fun JDA.setUpCommands(guildId: String) {
-    this.addCommandQueue(guildId, "hello", "Dites 'hello' au bot")
-    this.addCommandQueue(guildId, "test", "Ceci est un test")
     this.addCommandQueueWithOption(guildId,
         "poll",
         "Lancement d'un poll",
@@ -21,7 +19,6 @@ fun JDA.setUpCommands(guildId: String) {
             OptionData(OptionType.INTEGER, "days", "Durée en jours du sondage"),
         ),
     )
-    this.addCommandQueue(guildId, "form", "Test d'un text input")
     this.addCommandQueueWithOption(guildId, "race", "Lance le jeu 'writer race' !",
         mutableListOf(
             OptionData(OptionType.USER, "player1", "1er joueur"),
@@ -31,6 +28,7 @@ fun JDA.setUpCommands(guildId: String) {
             OptionData(OptionType.USER, "player5", "5e joueur")
         )
     )
+    this.addCommandQueue(guildId, "pf", "Lance une pièce !")
 }
 
 fun JDA.addCommandQueue(guildId: String, name: String, description: String){
