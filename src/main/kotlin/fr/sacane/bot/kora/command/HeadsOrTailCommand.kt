@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.utils.FileUpload
 import java.io.File
+import java.nio.file.Path
 import kotlin.random.Random
 
 class HeadsOrTailCommand : ListenerAdapter(){
@@ -12,8 +13,10 @@ class HeadsOrTailCommand : ListenerAdapter(){
         if(event.name != "pf") return
 
         val heads = Random.nextBoolean()
-        val file = File(System.getProperty("user.dir") + "\\assets" + if(heads) "\\head.png" else "\\tail.png")
+        val path = Path.of(System.getProperty("user.dir"), "assets", if(heads) "head.png" else "tail.png")
+        val file = path.toFile()
         event.replyFiles(listOf(FileUpload.fromData(file))).queue()
+
     }
 
 }
