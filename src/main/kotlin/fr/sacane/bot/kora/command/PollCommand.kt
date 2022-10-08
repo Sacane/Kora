@@ -87,6 +87,7 @@ class PollActionListener(
     private val userVote = mutableSetOf<String>()
     private val rearrangedAnswers = mutableMapOf<String, String>()
     private val unit = duration.name.lowercase()
+    private val answerToUser = mutableMapOf<String, MutableList<String>>()
 
     private lateinit var answers: MutableList<String>
     private lateinit var question: String
@@ -139,10 +140,11 @@ class PollActionListener(
     }
 
     private fun sendPoll(event: ModalInteractionEvent){
-        answers.forEachIndexed() { i, answer ->
+        answers.forEachIndexed { i, answer ->
             run {
                 answerResponses[('A' + i).toString()] = 0
                 rearrangedAnswers[('A' + i).toString()] = answer
+                answerToUser[('A' + i).toString() + " : $answer"] = mutableListOf()
             }
         }
         event.replyEmbeds(
@@ -177,25 +179,42 @@ class PollActionListener(
         event.member?.let { userVote.add(it.effectiveName) }
         event.reply("Votre vote à bien été pris en compte !").setEphemeral(true).queue()
         answerResponses[event.button.label] = answerResponses[event.button.label]!! + 1
+        event.member?.effectiveName?.let { answerToUser["${event.button.label} : ${rearrangedAnswers[event.button.label]}"]?.add(it) }
+        editEmbed()
+    }
+
+    private fun editEmbed() {
+        event.channel.editMessageEmbedsById(
+            currentId,
+            EmbedBuilder()
+                .setTitle("Mise à jour")
+                .setDescription("Question : '$question'")
+                .apply {
+                    answerToUser.forEach {
+                        (k, v) -> addField(k, v.toString(), true).build()
+                    }
+                }.build()
+        ).queue()
     }
 
     private fun sendAnswer() {
         event.jda.removeEventListener(this)
         event.channel.editMessageEmbedsById(currentId,
             EmbedBuilder()
-                .setTitle("Résultats")
+                .setTitle("Sondage terminé ! Résultats finaux")
                 .setDescription("Question : '$question'")
-                .setFooter("Participants : $userVote")
                 .apply {
-                    answerResponses.forEach { (k, v) ->
-                        rearrangedAnswers[k]?.let { addField(it, v.toString(), true) }
+                    answerToUser.forEach {
+                            (k, v) -> addField(k, v.toString(), true).build()
                     }
                 }.build()
         ).queue()
-    }
-
-    private fun idTemplate(id: String, i: Int): String{
-        return "${id}.$i" + "_poll"
+        event.channel.editMessageComponentsById(
+            currentId,
+            ActionRow.of(
+                List(answers.size) { i -> Button.primary("poll_button_${id}_$i", ('A' + i).toString()).asDisabled() }
+            )
+        ).queue()
     }
 
     private fun sendError(event: ModalInteractionEvent) {
