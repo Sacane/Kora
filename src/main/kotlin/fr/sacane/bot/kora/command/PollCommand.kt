@@ -82,6 +82,7 @@ class PollActionListener(
     private val duration: DurationUnit = DurationUnit.MINUTES
 ): ListenerAdapter(){
 
+    //TODO remove all those data structures and make it one class manager
     private val id: String = event.user.id + Instant.now()
     private var answerResponses = mutableMapOf<String, Int>()
     private val userVote = mutableSetOf<String>()
