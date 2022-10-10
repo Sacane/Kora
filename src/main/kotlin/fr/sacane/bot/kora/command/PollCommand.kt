@@ -96,15 +96,12 @@ class PollActionListener(
     companion object{
         val logger: Logger = LoggerFactory.getLogger(Companion::class.java)
     }
-
     init {
         event.jda.addEventListener(this)
     }
-
     fun reply(){
         sendModal()
     }
-
     private fun sendModal(){
         val questionInput = TextInput.create("${event.member?.effectiveName}_${id}_question", "Question", TextInputStyle.SHORT)
             .setMinLength(1)
@@ -122,7 +119,6 @@ class PollActionListener(
 
         event.replyModal(modal).queue()
     }
-
     override fun onModalInteraction(event: ModalInteractionEvent) {
         if(event.modalId != "${event.member?.effectiveName}_${id}_modal") return
 
@@ -138,7 +134,6 @@ class PollActionListener(
         }
         sendPoll(event)
     }
-
     private fun sendPoll(event: ModalInteractionEvent){
         answers.forEachIndexed { i, answer ->
             run {
@@ -169,7 +164,6 @@ class PollActionListener(
         }
 
     }
-
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
         if( event.button.id == null || !event.button.id?.startsWith("poll_button_${id}")!!) return
         if(userVote.contains(event.member?.effectiveName)){
@@ -182,7 +176,6 @@ class PollActionListener(
         event.member?.effectiveName?.let { answerToUser["${event.button.label} : ${rearrangedAnswers[event.button.label]}"]?.add(it) }
         editEmbed()
     }
-
     private fun editEmbed() {
         event.channel.editMessageEmbedsById(
             currentId,

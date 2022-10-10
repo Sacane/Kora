@@ -115,7 +115,6 @@ class RaceGame(
     init {
         event.jda.addEventListener(this)
     }
-
     private fun isPartOfGame(id: String): Boolean{
         return this.players.containsKey(id)
     }
@@ -130,12 +129,11 @@ class RaceGame(
             Button.secondary("Bt_start_${gameID}", "START")
         ).queue{
             it.retrieveOriginal().queue { id -> mainID =  id.id}
-            val scope = CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 delay(60_000)
                 sendResults()
             }
             if(players.hasAllFinished()){
-                scope.cancel()
                 sendResults()
             }
         }
@@ -143,7 +141,6 @@ class RaceGame(
     private fun isPlaying(id: String): Boolean{
         return playings.contains(id)
     }
-
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val userId = event.author.id
         if(isPartOfGame(userId) && isPlaying(userId)){
@@ -167,11 +164,7 @@ class RaceGame(
             event.channel.sendMessage("${players[userId]?.asMentionedUser()} Tu as oublié d'appuyer sur le bouton start :(").queue()
         }
     }
-
-
-
     private fun refreshResults() {
-
         event.channel.editMessageEmbedsById(
             mainID,
             EmbedBuilder()
@@ -198,13 +191,9 @@ class RaceGame(
         ).queue()
     }
 
-    private fun endResults(){
-
-    }
-
-    private fun winner(): RacePlayer{
-        return players.values.toList().sortedBy { it.getScore() }.first()
-    }
+//    private fun winner(): RacePlayer{
+//        return players.values.toList().sortedBy { it.getScore() }.first()
+//    }
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
         if(event.button.id != ("Bt_start_${gameID}")) return

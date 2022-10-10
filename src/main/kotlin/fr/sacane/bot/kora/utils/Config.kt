@@ -39,13 +39,11 @@ fun JDA.addCommandQueueWithOption(guildId: String, name: String, description: St
     this.getGuildById(guildId)?.upsertCommand(name, description)?.addOptions(options)?.queue()
 }
 
-enum class Mode{
-    TEST, PROD
-}
+
 class Config {
-
-
-
+    enum class Mode{
+        TEST, PROD
+    }
     companion object{
         fun getToken(): String?{
             val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()

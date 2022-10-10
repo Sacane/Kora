@@ -21,6 +21,6 @@ fun main(args: Array<String>) {
         .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
         .build()
     jda.awaitReady()
-    jda.setUpCommands(Config.getId(Mode.TEST)!!)
+//    jda.setUpCommands(Config.getId(Mode.TEST)!!)
     jda.setUpCommands(Config.getId(Mode.PROD)!!)
 }
