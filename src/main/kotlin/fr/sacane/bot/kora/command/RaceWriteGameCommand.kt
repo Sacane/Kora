@@ -11,9 +11,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
 import java.time.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -22,11 +19,14 @@ import kotlin.time.DurationUnit
 class WriterRaceCommand: ListenerAdapter(){
     private var words: Words = mutableListOf()
     companion object{
-
-        private val FILE = File(System.getProperty("user.dir") + "/words.txt")
+        private val FILE = Companion::class.java.classLoader.getResourceAsStream("words.txt")
     }
     init{
-        words.addAllFileWords(FILE)
+        FILE?.bufferedReader()?.useLines { lines ->
+            lines.forEach {
+                words.add(it)
+            }
+        } ?: throw Exception("File not found")
     }
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if(event.name != "race") return
@@ -46,10 +46,7 @@ class WriterRaceCommand: ListenerAdapter(){
     }
 }
 
-private fun Words.addAllFileWords(file: File){
-    val reader = BufferedReader(FileReader(file))
-    this.addAll(reader.lines().toList())
-}
+
 
 private fun Words.buildSentence(): String{
     val builder: StringBuilder = StringBuilder()

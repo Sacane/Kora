@@ -7,10 +7,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
+import net.dv8tion.jda.api.interactions.modals.Modal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -113,7 +113,6 @@ class PollActionListener(
             .setMinLength(3)
             .setRequired(true)
             .build()
-
         val modal = Modal.create("${event.member?.effectiveName}_${id}_modal", "Construisez votre question !")
             .addActionRows(listOf(ActionRow.of(questionInput), ActionRow.of(answerInput)))
             .build()

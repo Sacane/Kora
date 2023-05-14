@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import java.io.BufferedReader
 import java.io.FileReader
-import java.io.IOException
 import java.nio.file.Path
 
 fun JDA.setUpCommands(guildId: String) {
@@ -45,19 +44,12 @@ enum class Mode{
 class Config {
 
     companion object{
+        private val file = Companion::class.java.classLoader.getResourceAsStream("hidden.txt")
         fun getToken(): String?{
-            val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()
-            return try{
-                BufferedReader(FileReader(file)).use {
-                    it.lines().findFirst().get()
+            return file?.bufferedReader().use {
+                    it?.lines()?.findFirst()?.get()
                 }
-            }catch (e: IOException){
-                null
-            }
-
         }
-
-
         fun getId(mode: Mode): String?{
             return when(mode){
                 Mode.TEST -> getIdTest()
@@ -66,27 +58,19 @@ class Config {
         }
         private fun getIdTest(): String?{
             val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()
-            return try {
-                BufferedReader(FileReader(file)).use{
+            return BufferedReader(FileReader(file)).use{ it ->
                     it.lines().filter{
                         it.startsWith("idTest=")
                     }.findFirst().get().replace("idTest=", "")
                 }
-            }catch(e: IOException){
-                null
-            }
         }
         private fun getIdFriends(): String?{
-            val file = Path.of(System.getProperty("user.dir").plus( "/hidden.txt")).toFile()
-            return try {
-                BufferedReader(FileReader(file)).use{
-                    it.lines().filter{
+            return file?.bufferedReader().use{ it ->
+                it?.lines()?.filter{
                         it.startsWith("id=")
-                    }.findFirst().get().replace("id=", "")
+                    }?.findFirst()?.get()?.replace("id=", "")
                 }
-            }catch(e: IOException){
-                null
-            }
+
         }
     }
 }
